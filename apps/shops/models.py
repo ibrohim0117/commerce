@@ -3,9 +3,6 @@ from django.db import models
 from apps.shared.django.models import CreatedBaseModel
 
 
-# Create your models here.
-
-
 class Country(models.Model):
     name = models.CharField(max_length=255, verbose_name='nomi')
 
@@ -171,7 +168,76 @@ class TelegramBot(models.Model):
     shop = models.OneToOneField('shops.Shop', models.CASCADE, related_name='telegram_bots')
 
 
+class Category(models.Model):
+    class Status(models.TextChoices):
+        ACTIVE = 'active', 'Active'
+        INACTIVE = 'inactive', 'Inactive'
+
+    name = models.CharField(max_length=255)
+    emoji = models.CharField(max_length=25, blank=True, null=True)
+    parent = models.ForeignKey('self', models.CASCADE, blank=True, null=True, related_name='children')
+    show_in_ecommerce = models.BooleanField(db_default=False)
+    status = models.CharField(max_length=15, choices=Status.choices, db_default=Status.INACTIVE)
+    description = models.TextField(blank=True, null=True)
+    position = models.IntegerField(default=1)
+    shop = models.ForeignKey('shops.Shop', on_delete=models.CASCADE, related_name='categories')
 
 
+class Weight(models.Model):
+    name = models.CharField(max_length=10)
+
+
+class Length(models.Model):
+    name = models.CharField(max_length=10)
+
+
+class Product(models.Model):
+    class StockStatus(models.TextChoices):
+        FIXED = 'fixed', 'Fixed'
+        INDEFINITE = 'indefinite', 'Indefinite'
+        NOT_AVAILABLE = 'not_available', 'Not available'
+
+    class Unit(models.TextChoices):
+        ITEM = 'item', 'Item'
+        WEIGHT = 'weight', 'Weight'
+
+    name = models.CharField(max_length=255, verbose_name='Mahsulot nomi')
+    category = models.ForeignKey('shops.Category', on_delete=models.CASCADE, related_name='products')
+    price = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='Sotuv narxi')
+    full_price = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='Umumiy narxi')
+    description = models.TextField()
+    has_available = models.BooleanField(db_default=True, verbose_name='Mahsulotni yoqish yoki uchirish')
+
+    weight = models.IntegerField(null=True, blank=True)
+    length = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField(null=True, blank=True)
+    width = models.IntegerField(null=True, blank=True)
+
+    ikpu_code = models.IntegerField(null=True, blank=True, verbose_name='IKPU kod')
+    package_code = models.IntegerField(null=True, blank=True, verbose_name='qadoq kodi')
+    stock_status = models.CharField(max_length=100, choices=StockStatus.choices)
+    quantity = models.IntegerField(db_default=0, verbose_name='product soni status indefinite bulganda chiqadi')
+    barcode = models.IntegerField(null=True, blank=True, verbose_name='Barkod')
+    vat_percent = models.IntegerField(db_default=0, verbose_name='QQS foizi')
+    position = models.IntegerField(db_default=1, verbose_name='sort order')
+    internal_notes = models.TextField(nul=True, blank=True)
+    unit = models.CharField(max_length=20, choices=Unit.choices)
+    weight_class = models.ForeignKey('shops.Weight', models.CASCADE, related_name='weights')
+    length_class = models.ForeignKey('shops.Length', models.CASCADE, related_name='lengths')
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(check=models.Q(full_price__gte=models.F('price')), name='check_full_price')
+        ]
+
+
+class Attribute(models.Model):  # ✅
+    name = models.CharField(max_length=50)
+    product = models.ForeignKey('shops.Product', models.CASCADE, related_name='attributes')
+
+
+class AttributeValue(models.Model):  # ✅
+    value = models.CharField(max_length=20)
+    attribute = models.ForeignKey('shops.Attribute', models.CASCADE, related_name='values')
 
 
