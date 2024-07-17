@@ -85,3 +85,45 @@ class Shop(CreatedBaseModel):
 
         def __str__(self):
             return self.name
+
+
+class TelegramChanel(models.Model):
+    chat = models.CharField(max_length=255, unique=True, verbose_name='Telegram kanal username')
+    shop = models.ForeignKey('shops.Shop', on_delete=models.CASCADE, related_name='channels')
+
+    class Meta:
+        verbose_name = 'Telegram kanal'
+        verbose_name_plural = 'Telegram kanallar'
+
+    def __str__(self):
+        return f'{self.chat}'
+
+
+class ChanelMessage(models.Model):
+
+    class FileType(models.TextChoices):
+        IMAGE = 'image', 'Image'
+        VIDEO = 'video', 'Video'
+        TEXT = 'text', 'Text'
+
+    class MessageStatus(models.TextChoices):
+        SENT = 'sent', 'Sent'
+        PENDING = 'pending', 'Pending'
+        NOT_SENT = 'not_sent', 'Not sent'
+
+    message = models.CharField(max_length=4100)
+    chat = models.ForeignKey(TelegramChanel, on_delete=models.CASCADE)
+    is_scheduled = models.BooleanField(default=False)
+    scheduled_time = models.DateTimeField(blank=True, null=True, verbose_name="Keyinroq jo'natish vaqti")
+    file_type = models.CharField(max_length=255, choices=FileType.choices, default=FileType.TEXT)
+    status = models.CharField(max_length=255, choices=MessageStatus.choices, db_default=MessageStatus.PENDING,
+                              verbose_name="Habarning statusi")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Xabar yaratilgan vaqti')
+
+    class Meta:
+        verbose_name = 'Telegram Kanal xabari'
+        verbose_name_plural = 'Telegram kanal xabarlari'
+
+    def __str__(self):
+        return f"{self.id}. Message of {self.chat.c}"
+
