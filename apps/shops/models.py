@@ -125,5 +125,53 @@ class ChanelMessage(models.Model):
         verbose_name_plural = 'Telegram kanal xabarlari'
 
     def __str__(self):
-        return f"{self.id}. Message of {self.chat.c}"
+        return f"{self.id}. Message of {self.chat.chat}"
+
+
+class BroadCastMessage(models.Model):
+    class MessageStatus(models.TextChoices):
+        SENT = 'sent', 'Sent'
+        PENDING = 'pending', 'Pending'
+        NOT_SENT = 'not_sent', 'Not sent'
+
+    message = models.CharField(max_length=4100, verbose_name="Habar")
+    shop = models.ForeignKey('shops.Shop', on_delete=models.CASCADE)
+    lon = models.FloatField(blank=True, null=True, verbose_name="Lokatsiya lon")
+    lat = models.FloatField(blank=True, null=True, verbose_name="Lokatsiya lat")
+    scheduled_time = models.DateTimeField(blank=True, null=True, verbose_name="Keyinroq jo'natish vaqti")
+    received_users = models.IntegerField(default=0, verbose_name='Qabul qiluvchilar soni')
+    status = models.CharField(max_length=20, choices=MessageStatus.choices, db_default=MessageStatus.PENDING,
+                       verbose_name='Xabarning statusi')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Yaratilgan sana')
+
+    class Meta:
+        verbose_name = 'Axborotnoma'
+        verbose_name_plural = 'Axborotnomalar'
+
+
+class Commerce(models.Model):
+    class Status(models.TextChoices):
+        ACTIVE = 'active', 'Active'
+        INACTIVE = 'inactive', 'Inactive'
+
+    name = models.CharField(max_length=255, verbose_name="Domen nomi")
+    status = models.CharField(max_length=8, choices=Status.choices, verbose_name="Sayt aktiv yoki aktiv emasligi")
+    template_color = models.ForeignKey('shops.TemplateColor', on_delete=models.CASCADE, related_name='sites')
+    is_configured = models.BooleanField(db_default=True)
+    is_sub_domain = models.BooleanField(db_default=True, verbose_name='Sayt domen quygan yoki yuqligi')
+    shop = models.OneToOneField('shops.Shop', models.CASCADE, related_name='sites')
+
+
+class TelegramBot(models.Model):
+    username = models.CharField(max_length=255, unique=True, verbose_name='Telegram username')
+    token = models.CharField(max_length=255, unique=True, verbose_name='Telegram token')
+    group_access_token = models.CharField(max_length=255, unique=True, verbose_name='guruhda ishlashi uchun token')
+    is_new_template = models.BooleanField(verbose_name='web app True odiiy bot False')
+    order_button_url = models.CharField(max_length=255)
+    shop = models.OneToOneField('shops.Shop', models.CASCADE, related_name='telegram_bots')
+
+
+
+
+
 
