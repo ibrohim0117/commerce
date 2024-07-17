@@ -241,3 +241,24 @@ class AttributeValue(models.Model):  # ✅
     attribute = models.ForeignKey('shops.Attribute', models.CASCADE, related_name='values')
 
 
+class AttributeVariant(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Sotuv narxi')
+    full_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Umumiy narx')
+    weight_class = models.ForeignKey('shop.Weight', models.CASCADE, blank=True, null=True, related_name='weights')
+    length_class_id = models.ForeignKey('shop.Length', models.CASCADE, blank=True, null=True, related_name='lengths')
+    weight = models.IntegerField(null=True, blank=True)
+    length = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField(null=True, blank=True)
+    width = models.IntegerField(null=True, blank=True)
+    package_code = models.IntegerField(null=True, blank=True)
+    ikpu_code = models.IntegerField(null=True, blank=True)
+    stock_status = models.CharField(max_length=20)
+    quantity = models.IntegerField(null=True, blank=True)
+    unit = models.CharField(max_length=20)
+    barcode = models.IntegerField(null=True, blank=True)
+    has_available = models.BooleanField(db_default=False)
+    vat_percent = models.IntegerField(db_default=0)
+    product = models.ForeignKey('shops.Product', models.CASCADE, related_name='variants')
+
+
