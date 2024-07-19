@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
 from django.db import models
 
 from apps.shared.django.models import CreatedBaseModel
@@ -72,6 +73,13 @@ class Shop(CreatedBaseModel):
     is_new_products_show = models.BooleanField(db_default=True, default=False, verbose_name='Ommabop'
                                                 'mahsulotlar sahifasini ko\'r satish')
 
+    is_popular_products_show = models.BooleanField("'Ommabop mahsulotlar' sahifasini ko'rsatish", default=False,
+                                            db_default=False)
+    attachments = GenericRelation('shops.Attachment', blank=True)
+    shop_logo = GenericRelation('shops.Attachment', blank=True)
+    favicon_image = GenericRelation('shops.Attachment', blank=True)
+    slider_images = GenericRelation('shops.Attachment', blank=True)
+
     class TemplateColor(models.Model):  # ✅
         name = models.CharField(max_length=55, verbose_name='Nomi')
         color = models.CharField(max_length=55, verbose_name='Rangi')
@@ -125,6 +133,20 @@ class ChanelMessage(models.Model):
         return f"{self.id}. Message of {self.chat.chat}"
 
 
+class ChatMessage(models.Model):
+    class Type(models.TextChoices):
+        USER = 'user', 'User'
+        OWNER = 'owner', 'Owner'
+
+    class ContentType(models.TextChoices):
+        TEXT = 'text', 'Text'
+
+    message = models.CharField('Xabar', max_length=4100)
+    content_type = models.CharField(max_length=10, choices=Type.choices)
+    seen = models.BooleanField(db_default=False)
+    created_at = models.DateTimeField('Yaratilgan vaqti', auto_now_add=True)
+
+
 class BroadCastMessage(models.Model):
     class MessageStatus(models.TextChoices):
         SENT = 'sent', 'Sent'
@@ -133,12 +155,14 @@ class BroadCastMessage(models.Model):
 
     message = models.CharField(max_length=4100, verbose_name="Habar")
     shop = models.ForeignKey('shops.Shop', on_delete=models.CASCADE)
+    is_scheduled = models.BooleanField(default=False)
     lon = models.FloatField(blank=True, null=True, verbose_name="Lokatsiya lon")
     lat = models.FloatField(blank=True, null=True, verbose_name="Lokatsiya lat")
     scheduled_time = models.DateTimeField(blank=True, null=True, verbose_name="Keyinroq jo'natish vaqti")
     received_users = models.IntegerField(default=0, verbose_name='Qabul qiluvchilar soni')
     status = models.CharField(max_length=20, choices=MessageStatus.choices, db_default=MessageStatus.PENDING,
                        verbose_name='Xabarning statusi')
+    attachments = GenericRelation('shops.Attachment', blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Yaratilgan sana')
 
     class Meta:
@@ -181,6 +205,7 @@ class Category(models.Model):
     description = models.TextField(blank=True, null=True)
     position = models.IntegerField(default=1)
     shop = models.ForeignKey('shops.Shop', on_delete=models.CASCADE, related_name='categories')
+    attachments = GenericRelation('shops.Attachment', blank=True)
 
 
 class Weight(models.Model):
@@ -224,11 +249,20 @@ class Product(models.Model):
     unit = models.CharField(max_length=20, choices=Unit.choices)
     weight_class = models.ForeignKey('shops.Weight', models.CASCADE, related_name='weights')
     length_class = models.ForeignKey('shops.Length', models.CASCADE, related_name='lengths')
+    attachments = GenericRelation('shops.Attachment', blank=True)
 
     class Meta:
         constraints = [
             models.CheckConstraint(check=models.Q(full_price__gte=models.F('price')), name='check_full_price')
         ]
+
+
+class Attachment(CreatedBaseModel):
+    content_type = models.ForeignKey('contenttypes.ContentType', models.CASCADE, null=True, blank=True, related_name='attachments')
+    record_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'record_id')
+    key = models.CharField(max_length=255, null=True, blank=True)
+    url = models.URLField(null=True, blank=True)
 
 
 class Attribute(models.Model):  # ✅
@@ -247,10 +281,10 @@ class AttributeVariant(models.Model):
     full_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Umumiy narx')
     weight_class = models.ForeignKey('shop.Weight', models.CASCADE, blank=True, null=True, related_name='weights')
     length_class_id = models.ForeignKey('shop.Length', models.CASCADE, blank=True, null=True, related_name='lengths')
-    weight = models.IntegerField(null=True, blank=True)
-    length = models.IntegerField(null=True, blank=True)
-    height = models.IntegerField(null=True, blank=True)
-    width = models.IntegerField(null=True, blank=True)
+    weight = models.IntegerField(null=True, blank=True, verbose_name='Vazni')
+    length = models.IntegerField(null=True, blank=True, verbose_name='Uzunligi')
+    height = models.IntegerField(null=True, blank=True, verbose_name='Balandligi')
+    width = models.IntegerField(null=True, blank=True, verbose_name='Kengligi')
     package_code = models.IntegerField(null=True, blank=True)
     ikpu_code = models.IntegerField(null=True, blank=True)
     stock_status = models.CharField(max_length=20)
