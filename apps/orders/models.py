@@ -3,6 +3,60 @@ from django.db import models
 from apps.shared.django.models import CreatedBaseModel
 
 
+
+class Order(models.Model):  # ✅
+    class Status(models.TextChoices):
+        IN_PROCESSING = 'in_processing', 'In Process'
+        CANCELLED = 'cancelled', 'Cancelled'
+        CONFIRMED = 'confirmed', 'Confirmed'
+        PERFORMING = 'performing', 'Performing'
+        PERFORMED = 'performed', 'Performed'
+        REFUNDED = 'refunded', 'Refunded'
+
+    class Type(models.TextChoices):
+        TELEGRAM = 'telegram', 'Telegram'
+        WEB = 'web', 'Web'
+
+    class DeliveryType(models.TextChoices):
+        ONLINE_DELIVERY = 'online_delivery', 'Online Delivery'
+        DELIVERY = 'delivery', 'Delivery'
+        PICKUP = 'pickup', 'Pickup'
+
+    delivery_price = models.DecimalField('Yetkazib berish narxi', null=True, blank=True, decimal_places=2, max_digits=15)
+    # user = ForeignKey('users.ShopUser', SET_NULL, null=True, blank=True, verbose_name='Teligram chat id')
+    payment = models.ForeignKey('orders.ShopService', models.SET_NULL, null=True, blank=True, related_name='orders')
+    status = models.CharField('Order Statusi', max_length=20, choices=Status.choices)
+    paid = models.BooleanField("To'lov qilingan yoki yo'qligi", db_default=False)
+
+    promo_code = models.ForeignKey('orders.PromoCode', models.SET_NULL, null=True, blank=True, related_name='orders')
+    note = models.TextField('Description', null=True, blank=True)
+    delivery_date = models.DateTimeField('Yetkazib berish vaqti', null=True, blank=True)
+    delivery_type = models.CharField(max_length=50, choices=DeliveryType.choices)
+    order_type = models.CharField(max_length=20, choices=Type.choices)
+
+    is_archived = models.BooleanField('Arxivlangan buyurtmalar', db_default=False)
+    yandex_taxi_link = models.CharField(max_length=255, null=True, blank=True)
+    currency = models.ForeignKey('shops.Currency', models.RESTRICT, related_name='orders')
+    address = models.CharField('Manzil', max_length=255, null=True, blank=True)
+    lon = models.FloatField(null=True, blank=True)
+    lat = models.FloatField(null=True, blank=True)
+    entrance = models.CharField('Kirish joyi', max_length=50, null=True, blank=True)
+    door_phone = models.CharField('eshik telfon raqami', max_length=50, null=True, blank=True)
+    floor_number = models.IntegerField('Qavat raqami', null=True, blank=True)
+    apartment_number = models.IntegerField('kvartera raqami', null=True, blank=True)
+
+    first_name = models.CharField('Haridorni ismi', max_length=50)  # register qilgan paytdagi ismni oladi
+    last_name = models.CharField('Haridorni familiyasi', max_length=50)  # register qilgan paytdagi familiyani oladi
+    phone = models.CharField('Haridorni telfon raqami ', max_length=50)  # kiritsh majburiy
+    created_at = models.DateTimeField('Buyurtma yaratilgan vaqti', auto_now_add=True)
+
+
+class OrderItem(models.Model):  # ✅
+    order = models.ForeignKey('orders.Order', models.CASCADE, related_name='items')
+    count = models.PositiveIntegerField('Soni', db_default=1)
+    currency = models.ForeignKey('shops.Currency', models.RESTRICT)
+    product_attribute = models.ForeignKey('shops.AttributeVariant', models.CASCADE, related_name='order_items')
+
 class PromoCode(CreatedBaseModel):
     class Type(models.TextChoices):
         FREE_DELIVERY = 'free_delivery', 'Free delivery'
