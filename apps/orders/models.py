@@ -3,8 +3,7 @@ from django.db import models
 from apps.shared.django.models import CreatedBaseModel
 
 
-
-class Order(models.Model):  # ✅
+class Order(models.Model):
     class Status(models.TextChoices):
         IN_PROCESSING = 'in_processing', 'In Process'
         CANCELLED = 'cancelled', 'Cancelled'
@@ -51,11 +50,12 @@ class Order(models.Model):  # ✅
     created_at = models.DateTimeField('Buyurtma yaratilgan vaqti', auto_now_add=True)
 
 
-class OrderItem(models.Model):  # ✅
+class OrderItem(models.Model):
     order = models.ForeignKey('orders.Order', models.CASCADE, related_name='items')
     count = models.PositiveIntegerField('Soni', db_default=1)
     currency = models.ForeignKey('shops.Currency', models.RESTRICT)
     product_attribute = models.ForeignKey('shops.AttributeVariant', models.CASCADE, related_name='order_items')
+
 
 class PromoCode(CreatedBaseModel):
     class Type(models.TextChoices):
@@ -75,6 +75,9 @@ class PromoCode(CreatedBaseModel):
     class Meta:
         verbose_name = 'Promo kod'
         verbose_name_plural = 'Promo kodlar'
+        unique_together = [
+            ('code', 'shop')
+        ]
 
 
 class ShopService(models.Model):
@@ -107,4 +110,26 @@ class Service(models.Model):
         ]
 
 
-class ShopServiceField()
+class ShopServiceField(models.Model):
+    shop_service = models.ForeignKey('orders.ShopService', models.CASCADE)
+    field = models.ForeignKey('orders.Field', models.CASCADE)
+    value = models.JSONField(default=dict)
+
+
+class Field(models.Model):
+    class Type(models.TextChoices):
+        INTEGER = 'integer', 'Integer'
+        STRING = 'string', 'String'
+        TEXT = 'text', 'Text'
+        LIST = 'list', 'List'
+        VIDEO = 'video', 'Video'
+        IMAGE = 'image', 'Image'
+        GEOLOCATION = 'geolocation', 'Geolocation'
+
+    service = models.ForeignKey('orders.Service', models.CASCADE, related_name='fields')
+    label = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
+    max_length = models.IntegerField()
+    required = models.BooleanField()
+    type = models.CharField(max_length=255, choices=Type.choices)
+    provider_labels = models.JSONField(null=True, blank=True)
