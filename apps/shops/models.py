@@ -105,7 +105,6 @@ class TelegramChanel(models.Model):
 
 
 class ChanelMessage(models.Model):
-
     class FileType(models.TextChoices):
         IMAGE = 'image', 'Image'
         VIDEO = 'video', 'Video'
@@ -245,7 +244,7 @@ class Product(models.Model):
     barcode = models.IntegerField(null=True, blank=True, verbose_name='Barkod')
     vat_percent = models.IntegerField(db_default=0, verbose_name='QQS foizi')
     position = models.IntegerField(db_default=1, verbose_name='sort order')
-    internal_notes = models.TextField(nul=True, blank=True)
+    internal_notes = models.TextField(null=True, blank=True)
     unit = models.CharField(max_length=20, choices=Unit.choices)
     weight_class = models.ForeignKey('shops.Weight', models.CASCADE, related_name='weights')
     length_class = models.ForeignKey('shops.Length', models.CASCADE, related_name='lengths')
@@ -279,8 +278,8 @@ class AttributeVariant(models.Model):
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Sotuv narxi')
     full_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Umumiy narx')
-    weight_class = models.ForeignKey('shop.Weight', models.CASCADE, blank=True, null=True, related_name='weights')
-    length_class_id = models.ForeignKey('shop.Length', models.CASCADE, blank=True, null=True, related_name='lengths')
+    weight_class = models.ForeignKey('shops.Weight', models.CASCADE, blank=True, null=True, related_name='weights')
+    length_class_id = models.ForeignKey('shops.Length', models.CASCADE, blank=True, null=True, related_name='lengths')
     weight = models.IntegerField(null=True, blank=True, verbose_name='Vazni')
     length = models.IntegerField(null=True, blank=True, verbose_name='Uzunligi')
     height = models.IntegerField(null=True, blank=True, verbose_name='Balandligi')

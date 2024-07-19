@@ -51,28 +51,31 @@ class User(AbstractBaseUser, PermissionsMixin):
         TELEGRAM = 'telegram', 'Telegram'
         FACEBOOK = 'facebook', 'Facebook'
 
-    type = models.TextField(choices=Type.choices, max_length=255)
-    username = models.CharField(max_length=150, validators=[UnicodeUsernameValidator()])
-    first_name = models.CharField(max_length=255, blank=True, verbose_name='Ism')
-    last_name = models.CharField(max_length=255, blank=True, verbose_name='Familya')
-    is_active = models.BooleanField(default=False)
+    type = models.CharField(max_length=25)
+    username = models.CharField('Foydalanuvchi nomi', max_length=150, null=True, blank=True, unique=True,
+                         validators=[UnicodeUsernameValidator()])
+    first_name = models.CharField('Ism', max_length=150, blank=True)
+    last_name = models.CharField('Familiya', max_length=150, blank=True)
+    email = models.EmailField('Eamil', unique=True)
     is_staff = models.BooleanField(default=False)
-    language = models.ForeignKey('shops.Language', on_delete=models.CASCADE)
-    public_offer = models.BooleanField(default=False)
-    invitation_code = models.CharField(max_length=25, blank=True, unique=True)
-    created_at = models.DateTimeField(auto_add=True)
+    is_active = models.BooleanField(default=False)
+
+    language = models.ForeignKey('shops.Language', models.CASCADE)
+    public_offer = models.BooleanField('Ommaviy taklif', default=False)
+    invitation_code = models.CharField('Taflifnoma kodi', max_length=25, unique=True, null=True)
+    created_at = models.DateTimeField(auto_now=True)
     default_shop = models.OneToOneField('shops.Shop', models.SET_NULL, blank=True, null=True)
 
     objects = UserManager()
 
     EMAIL_FIELD = "email"
-    USERNAME_FIELD = "username"
-    REQUIRED_FIELDS = ["email"]
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
 
-    class Meta:
-        unique_together = [
-            ('username', 'shop')
-        ]
+    # class Meta:
+    #     unique_together = [
+    #         ('username', 'shop')
+    #     ]
 
 
 class Plan(CreatedBaseModel):

@@ -86,8 +86,8 @@ class ShopService(models.Model):
         INACTIVE = 'inactive', 'Inactive'
         NOT_EXISTS = 'not_exists', 'Not exists'
 
-    shop = models.ForeignKey('shops.Shop', models.CASCADE)
-    service = models.ForeignKey('shops.Shop', models.CASCADE)
+    shop = models.ForeignKey('shops.Shop', models.CASCADE, related_name='shop_services')
+    service = models.ForeignKey('orders.Service', models.CASCADE, related_name='service_orders')
     status = models.CharField(max_length=255, choices=Status.choices, default=Status.INACTIVE)
 
 
