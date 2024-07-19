@@ -36,3 +36,6 @@ class User(AbstractBaseUser, PermissionsMixin):
             ('username', 'shop')
         ]
 
+
+
+

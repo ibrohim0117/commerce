@@ -51,3 +51,6 @@ class Service(models.Model):
         unique_together = [
             ('code', 'type')
         ]
+
+
+class ShopServiceField()
