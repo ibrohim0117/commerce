@@ -80,7 +80,7 @@ class Shop(CreatedBaseModel):
     favicon_image = GenericRelation('shops.Attachment', blank=True)
     slider_images = GenericRelation('shops.Attachment', blank=True)
 
-    class TemplateColor(models.Model):  # ✅
+    class TemplateColor(models.Model):
         name = models.CharField(max_length=55, verbose_name='Nomi')
         color = models.CharField(max_length=55, verbose_name='Rangi')
 
@@ -264,12 +264,12 @@ class Attachment(CreatedBaseModel):
     url = models.URLField(null=True, blank=True)
 
 
-class Attribute(models.Model):  # ✅
+class Attribute(models.Model):
     name = models.CharField(max_length=50)
     product = models.ForeignKey('shops.Product', models.CASCADE, related_name='attributes')
 
 
-class AttributeValue(models.Model):  # ✅
+class AttributeValue(models.Model):
     value = models.CharField(max_length=20)
     attribute = models.ForeignKey('shops.Attribute', models.CASCADE, related_name='values')
 
