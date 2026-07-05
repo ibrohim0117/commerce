@@ -112,4 +112,11 @@ venv.bak/
 dmypy.json
 .pyre/
 .pytype/
-cython_debug/
+cython_debug/*.pyc
+*.pyo
+.venv/
+*.sqlite3
+*.db
+*.session
+.DS_Store
+media/
